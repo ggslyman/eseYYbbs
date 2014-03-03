@@ -1,0 +1,2 @@
+RewriteEngine on
+RewriteRule ^(.+)\.cgi\??(.*)$ $1.php?PATH_INFO=$2 [L,QSA]

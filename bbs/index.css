@@ -1,0 +1,132 @@
+@charset "utf-8";
+
+body {
+	margin:0px;          /* ページ全体のmargin */
+	padding:0px;         /* ページ全体のpadding */
+	text-align:center;   /* 下記のautoに未対応用のセンタリング */
+}
+div#container {
+	margin-left:auto;    /* 左側マージンを自動的に空ける */
+	margin-right:auto;   /* 右側マージンを自動的に空ける */
+	text-align:left;     /* 中身を左側表示に戻す */
+	width:800px;         /* 幅を決定する */
+}
+
+/* form装飾 ここから */
+form input[type="text"] {
+	width:200px;
+	border-radius: 5px;
+	box-shadow: 5px 5px 5px rgba(200,200,200,0.2)inset;
+	border: 1px solid #888;
+	height:21px;
+	padding:5px 6px 3px 12px;
+	font-size:15px;
+	vertical-align:middle;
+}
+
+form textarea {
+	border-radius: 5px 0 0 5px;
+	box-shadow: 5px 5px 5px rgba(200,200,200,0.2)inset;
+	border: 1px solid #888;
+	padding:14px 10px 5px 14px;
+	font-size:15px;
+	width:520px;
+	height:12em;
+	margin-top:5px;
+}
+
+
+form input[type="submit"], input[type="reset"]{
+	text-decoration: none;
+	text-align: center;
+	padding: 9px 15px 8px 15px;
+	font-size: 16px;
+	color: #fff;
+	background: #5ba825 url('glass-button.png') repeat-x top left;
+	border: 1px solid #377d00;
+	border-radius: 5px;
+	line-height:1;
+	vertical-align:middle;
+	margin-top:10px;
+}
+/* form装飾  ここまで */
+
+
+
+/* table装飾  ここから */
+table#board {
+  width: auto;
+  border-spacing: 0;
+  font-size:14px;
+}
+table#board th {
+  color: #fff;
+  padding: 8px 15px;
+  background: #222 url('glass-button.png') repeat-x top left;
+  height:20px;
+  font-weight: bold;
+  border-left:1px solid #111;
+  border-top:1px solid #111;
+  border-bottom:1px solid #111;
+  text-align: center;
+}
+table#board th:first-child {
+  border-radius: 6px 0 0 0;	
+}
+table#board th:last-child {
+  border-radius:0 6px 0 0;
+  border-right:1px solid #111;
+  box-shadow: 2px 0 1px rgba(0,0,0,0.1);
+}
+table#board tr td {
+  padding: 6px 15px;
+  border-bottom: 1px solid #111;
+  border-left: 1px solid #111;
+  text-align: center;
+}
+table#board tr {
+  background: #fff;
+}
+table#board tr td:last-child {
+  border-right: 1px solid #111;
+  box-shadow: 2px 0px 1px rgba(0,0,0,0.1);
+}
+table#board tr:last-child td {
+  box-shadow: 2px 2px 1px rgba(0,0,0,0.1);
+}
+table#board tr:last-child td:first-child {
+  border-radius: 0 0 0 6px;
+}
+table#board tr:last-child td:last-child {
+  border-radius: 0 0 6px 0;
+}
+/* table装飾  ここまで */
+
+
+
+
+
+
+
+form{
+	margin-top:2.5em;
+}
+
+form input#formtitle{
+	width:460px;
+}
+
+
+div#formline1 {
+	margin-bottom:0.3em;
+}
+
+th#title {
+	min-width:400px;
+}
+
+table#board td:nth-child(2){
+	text-align:left;
+}
+
+

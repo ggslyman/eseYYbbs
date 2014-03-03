@@ -1,0 +1,2 @@
+RewriteEngine on
+RewriteRule ^(.*)\/$ test/index.php?bbs=$1 [L,QSA]
