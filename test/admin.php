@@ -25,104 +25,137 @@ class ADMIN{
 			$pass = $boardadminpass;
 		}
 		if(md5($this->mail) == $adminpass || (isset($pass) && md5($this->mail) == $pass)){
-			if($this->name == "復帰"){
-				$this->Fukki();
-				PrintSucess("$this->bbs/subject.txtの復帰完了!");
-			}
-			elseif($this->name == "削除"){
-				if(preg_match("/^http/", $this->message)){
-					$this->DeleteThread();
-					PrintSucess("スレッドを削除しました。");
-				}
-				elseif(preg_match("/^>>\d/", $this->message)){
-					if(!$this->key){ PrintError("レスの削除は該当のスレッドから行う必要があります。"); }
-					$this->DeleteRes();
-					PrintSucess("レスを削除しました。");
-				}
-				else{ PrintError("スレッド削除なら「スレのURL」を、レス削除なら「>>数字」と入力してください"); }
-			}
-			elseif($this->name == "BAN"){
-				$this->banIp();
-				PrintSucess("指定レスのIPをBANしました");
-			}
-			elseif($this->name == "IP確認"){
-				$ip = $this->getIpLog();
-				PrintSucess("指定レスのIPを取得しました:".$ip);
-			}
-			elseif($this->name == "IP確認全件"){
-				$ip = $this->getIpLogAll();
-				PrintSucess("IPを全件取得しました:".$ip);
-			}
-			elseif($this->name == "BAN解除"){
-				$this->liftBan();
-				PrintSucess("指定IPをBAN解除しました");
-			}
-			elseif($this->name == "倉庫"){
-				if(preg_match("/^http/", $this->message)){
-					$this->DatOchi();
-					PrintSucess("スレッドがDAT落ちしました");
-				}
-				else{ PrintError("スレッドを落とすなら「スレのURL」を入力してください"); }
-			}
-			elseif($this->name == "2ch"){
-				$this->Import2ch();
-				PrintSucess("2chからスレを輸入しました");
-			}
-			elseif($this->name == "したらば"){
-				$this->ImportShitaraba();
-				PrintSucess("したらばからスレを輸入しました");
-			}
-			elseif($this->name == "YY"){
-				$this->ImportYy();
-				PrintSucess("YYからスレを輸入しました");
-			}
-			elseif($this->name == "Jane"){
-				$this->ImportJaneDat();
-				PrintSucess("Janeのdatファイルをインポートしました");
-			}
-			elseif($this->name == "ID"){
-				$this->toggleId();
-				PrintSucess("IDの表示非表示を切り替えました。");
-			}
-			elseif($this->name == "dat修正"){
-				$this->convertDat();
-				PrintSucess("dat修正完了");
-			}
-			elseif($this->name == "パスワード変更"){
-				if(preg_match("/^#[a-zA-Z0-9]{8,}$/",$this->message,$matches)){
-					$this->changePassword($this->message);
-					PrintSucess("板管理パスワードを変更しました。");
-				}else{
-					PrintError("パスワードには#[英数字8文字以上]を設定してください。");
-				}
-			}
-			elseif($this->name == "板名変更"){
-				$this->changeTitle($this->message);
-				PrintSucess("板名を変更しました。");
-			}
-			elseif($this->name == "板説明更新"){
-				$this->changeDescription($this->message);
-				PrintSucess("板説明を更新しました。");
-			}
-			elseif($this->name == "名無し設定"){
-				$this->changeNanashi($this->message);
-				PrintSucess("名無し設定を更新しました。");
-			}
-			elseif($this->name == "板停止"){
-				$this->stopBoard();
-				PrintSucess("板を停止しました。");
-			}
-			elseif($this->name == "板再開"){
-				$this->startBoard();
-				PrintSucess("板を再開しました。");
-			}
-			elseif($this->name == "新規板作成"){
-				if(md5($this->mail) == $adminpass){
-					$this->createThread($this->message);
-					PrintSucess("新規板を作成しました。");
-				}
-			}
-			else{
+			switch ($this->name){
+				case "復帰":
+					$this->Fukki();
+					PrintSucess("$this->bbs/subject.txtの復帰完了!");
+					braek;
+				case "削除":
+					if(preg_match("/^http/", $this->message)){
+						$this->DeleteThread();
+						PrintSucess("スレッドを削除しました。");
+					}
+					elseif(preg_match("/^>>\d/", $this->message)){
+						if(!$this->key){ PrintError("レスの削除は該当のスレッドから行う必要があります。"); }
+						$this->DeleteRes();
+						PrintSucess("レスを削除しました。");
+					}
+					else{ PrintError("スレッド削除なら「スレのURL」を、レス削除なら「>>数字」と入力してください"); }
+					braek;
+				case "BAN":
+					$this->banIp();
+					PrintSucess("指定レスのIPをBANしました");
+					braek;
+				case "IP確認":
+					$ip = $this->getIpLog();
+					PrintSucess("指定レスのIPを取得しました:".$ip);
+					braek;
+				case "IP確認全件":
+					$ip = $this->getIpLogAll();
+					PrintSucess("IPを全件取得しました:".$ip);
+					braek;
+				case "BAN解除":
+					$this->liftBan();
+					PrintSucess("指定IPをBAN解除しました");
+					braek;
+				case "NGワード取得":
+					$ngwords = $this->getNgWord();
+					PrintSucess("NGワードを取得しました<br />".$ngwords);
+					braek;
+				case "NGワード更新":
+					$ip = $this->setNgWord();
+					PrintSucess("NGワードを更新しました。");
+					braek;
+				case "NGワード追加":
+					$ip = $this->addNgWord();
+					PrintSucess("NGワードを追加しました。");
+					braek;
+				case "倉庫":
+					if(preg_match("/^http/", $this->message)){
+						$this->DatOchi();
+						PrintSucess("スレッドがDAT落ちしました");
+					}
+					else{ PrintError("スレッドを落とすなら「スレのURL」を入力してください"); }
+					braek;
+				case "2ch":
+					$this->Import2ch();
+					PrintSucess("2chからスレを輸入しました");
+					braek;
+				case "したらば":
+					$this->ImportShitaraba();
+					PrintSucess("したらばからスレを輸入しました");
+					braek;
+				case "YY":
+					$this->ImportYy();
+					PrintSucess("YYからスレを輸入しました");
+					braek;
+				case "Jane":
+					$this->ImportJaneDat();
+					PrintSucess("Janeのdatファイルをインポートしました");
+					braek;
+				case "ID":
+					$res = $this->toggleId();
+					switch ($res) {
+					case 1:
+						PrintSucess("IDが強制表示されるようになりました。");
+						break;
+					case -1:
+						PrintSucess("IDが非表示になりました。");
+						break;
+					}
+					braek;
+				case "スレ建て制限":
+					$res = $this->restrictBuildThread();
+					switch ($res) {
+					case 1:
+						PrintSucess("管理者のみがスレッドを建てられるように変更しました。");
+						break;
+					case -1:
+						PrintSucess("だれでもスレッドを建てられるように変更しました。");
+						break;
+					}
+					braek;
+				case "dat修正":
+					$this->convertDat();
+					PrintSucess("dat修正完了");
+					braek;
+				case "パスワード変更":
+					if(preg_match("/^#[a-zA-Z0-9]{8,}$/",$this->message,$matches)){
+						$this->changePassword($this->message);
+						PrintSucess("板管理パスワードを変更しました。");
+					}else{
+						PrintError("パスワードには#[英数字8文字以上]を設定してください。");
+					}
+					braek;
+				case "板名変更":
+					$this->changeTitle($this->message);
+					PrintSucess("板名を変更しました。");
+					braek;
+				case "板説明更新":
+					$this->changeDescription($this->message);
+					PrintSucess("板説明を更新しました。");
+					braek;
+				case "名無し設定":
+					$this->changeNanashi($this->message);
+					PrintSucess("名無し設定を更新しました。");
+					braek;
+				case "板停止":
+					$this->stopBoard();
+					PrintSucess("板を停止しました。");
+					braek;
+				case "板再開":
+					$this->startBoard();
+					PrintSucess("板を再開しました。");
+					braek;
+				case "新規板作成":
+					if(md5($this->mail) == $adminpass){
+						$this->createThread($this->message);
+						PrintSucess("新規板を作成しました。");
+					}
+					braek;
+				case "追加コマンド":
+					braek;
+				default :
 				PrintError("コマンドが違います。");
 			}
 		}
@@ -308,6 +341,86 @@ class ADMIN{
 		}
 		//リストの再構築
 		$banList = file_put_contents("$this->path/$this->bbs/iplog/ban.log",implode("\n",$newBanList), LOCK_EX);
+	}
+
+	// NGワード取得
+	function getNgWord(){
+		// 作成するファイル名の指定
+		$file_name = "../".$this->bbs."/".'.ngword';
+		if(!file_exists($file_name)) return "NGワードが登録されていません。";
+		//NGワードの取得
+		$ngWords = array();
+		$tmpngWords = file_get_contents($file_name);
+		$tmpngWords = explode("\n",$tmpngWords);
+		foreach($tmpngWords as $ngword_line){
+			$ngWords[] = $ngword_line;
+		}
+		return implode("<br />\n",$ngWords);
+	}
+
+	// NGワード設定
+	function setNgWord(){
+		// 作成するファイル名の指定
+		$file_name = "../".$this->bbs."/".'.ngword';
+		if( !file_exists($file_name) ){
+			// ファイル作成
+			touch($file_name);
+			chmod( $file_name, 0600 );
+			return 1;
+		}
+		// NGワードの取得
+		$ngWords = array();
+		$tmpngWords = file_get_contents(trim($file_name));
+		$newNgWords = explode("\n",trim($this->message));
+		foreach($newNgWords as $ngWords_line){
+			if(
+					trim($ngWords_line) != ""
+				&&	!in_array(trim($ngWords_line),$ngWords)
+			)
+			{
+				$ngWords[] = trim($ngWords_line);
+			}
+		}
+		//BANリストに追加
+		$ngWordList = file_put_contents($file_name,implode("\n",$ngWords), LOCK_EX);
+	}
+
+
+	// NGワード追加
+	function addNgWord(){
+		// 作成するファイル名の指定
+		$file_name = "../".$this->bbs."/".'.ngword';
+		if( !file_exists($file_name) ){
+			// ファイル作成
+			touch($file_name);
+			chmod( $file_name, 0600 );
+			return 1;
+		}
+		// NGワードの取得
+		$ngWords = array();
+		$tmpngWords = file_get_contents(trim($file_name));
+		$tmpngWords = explode("\n",$tmpngWords);
+		foreach($tmpngWords as $ngWords_line){
+			if(
+					trim($ngWords_line) != ""
+				&&	!in_array(trim($ngWords_line),$ngWords)
+			)
+			{
+				$ngWords[] = trim($ngWords_line);
+			}
+		}
+		$newNgWords = explode("\n",trim($this->message));
+		foreach($newNgWords as $ngWords_line){
+			if(
+					trim($ngWords_line) != ""
+				&&	!in_array(trim($ngWords_line),$ngWords)
+			)
+			{
+				$ngWords[] = trim($ngWords_line);
+			}
+		}
+		//BANリストに追加
+		$ngWordList = file_put_contents($file_name,implode("\n",$ngWords), LOCK_EX);
 	}
 
 
@@ -583,10 +696,13 @@ class ADMIN{
 			// ファイル作成
 			touch($file_name);
 			chmod( $file_name, 0600 );
+			return 1;
 		}else{
 			// ファイルの削除
 			unlink($file_name);
+			return -1;
 		}
+		return 0;
 	}
 
 
@@ -601,6 +717,24 @@ class ADMIN{
 		fclose($fp);
 		chmod($file_name,0600);
 		return true;
+	}
+
+	// スレ建て制限
+	function restrictBuildThread(){
+		// 作成するファイル名の指定
+		$file_name = "../".$this->bbs."/".'.buildThreadAdminOnly';
+		// ファイルの存在確認
+		if( !file_exists($file_name) ){
+			// ファイル作成
+			touch($file_name);
+			chmod( $file_name, 0600 );
+			return 1;
+		}else{
+			// ファイルの削除
+			unlink($file_name);
+			return -1;
+		}
+		return 0;
 	}
 
 	// 板名変更
@@ -633,6 +767,7 @@ class ADMIN{
 	// 名無し設定の更新
 	function changeNanashi($message){
 		// 作成するファイル名の指定
+		if(trim($message) == "") $message = "名無しさん";
 		$file_name = "../".$this->bbs."/".'.nanashi';
 		// ファイルポインタを開く
 		$fp = fopen($file_name,'w');

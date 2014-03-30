@@ -60,6 +60,7 @@ class BBS{
 				or	$this->name == 'YY'
 				or	$this->name == 'Jane'
 				or	$this->name == 'ID'
+				or	$this->name == 'スレ建て制限'
 				or	$this->name == 'パスワード変更'
 				or	$this->name == '板名変更'
 				or	$this->name == '名無し設定'
@@ -68,6 +69,9 @@ class BBS{
 				or	$this->name == '板再開'
 				or	$this->name == '新規板作成'
 				or	$this->name == 'dat修正'
+				or	$this->name == 'NGワード取得'
+				or	$this->name == 'NGワード更新'
+				or	$this->name == 'NGワード追加'
 			) and preg_match("/^#/", $this->mail) and $this->bbs){
 			include_once("./admin.php");
 			new ADMIN($this->name, $this->mail, $this->bbs, $this->key, $this->message);
@@ -112,19 +116,40 @@ class BBS{
 		//ロボ体策。フォームのトラップ(passwordとurl)が入力されていたらロボットなので規制する
 		if($this->trap1 or $this->trap2){ PrintError("投稿できません。101"); }
 	}
-	
+
+	function checkBan(){
+		$banList = $this->getBanList();
+		$host = $this->getHost();
+		if(in_array($host,$banList)){
+			return true;
+		}
+		return false;
+	}
+
+	function checkNgWord(){
+		$file_name = "../".$this->bbs."/".'.ngword';
+		$tmpngWords = file_get_contents(trim($file_name));
+		$tmpngWords = explode("\n",strtolower(mb_convert_kana($tmpngWords,"asKV","SJIS")));
+		$pattern = '/('.implode("|",$tmpngWords).')/';
+		$ngFlag = preg_match($pattern, strtolower(mb_convert_kana($this->message,"asKV","SJIS")), $matches, PREG_OFFSET_CAPTURE);
+		return $ngFlag;
+	}
+
 	function WriteThread(){
 		//BANチェック
 		if($this->checkBan())PrintError("投稿できませんでした");
 		$this->key = $this->now;
+		// NGワードチェック
+		if($this->checkNgWord())PrintError("投稿できませんでした");
 		// 掲示板ごとのスレ建て制限パスの実装
 		// パスワード関連の処理の追加とそれに伴う処理のif文内への移動
 		$bbs = $this->bbs;
+		$adminOnryFlag = file_exists("../".$this->bbs."/".'.buildThreadAdminOnly');
 		$file_name = "../".$this->bbs."/".'.password';
 		$boardadminpass = file_get_contents($file_name);
 		$adminpass = ADMIN_PASSWORD;
 		// パスワードファイルが存在した場合のみ、パスワードチェック
-		if(strlen($boardadminpass) && $boardadminpass !== md5($this->mail) && $adminpass !== md5($this->mail)){
+		if(($adminOnryFlag) && (strlen($boardadminpass) && $boardadminpass !== md5($this->mail) && $adminpass !== md5($this->mail))){
 			PrintError("スレッド作成は管理者のみが行えます");
 		}else{
 			//subject.txt：$subjectlistに全データ格納
@@ -178,6 +203,8 @@ class BBS{
 	function WriteRes(){
 		//BANチェック
 		if($this->checkBan())PrintError("投稿できませんでした");
+		// NGワードチェック
+		if($this->checkNgWord())PrintError("投稿できませんでした");
 		$subject_num = $dat_num = 0;
 		//subject.txt：書き込もうとするスレを見つける＋$subjectに全データ格納
 		$fp_subject = fopen("$this->path/$this->bbs/subject.txt", "rb+");
@@ -227,15 +254,15 @@ class BBS{
 		$title = rtrim($title);
 
 		$dat_line = "$name<>$mail<>$date<> $message <>\n";
-		$sub_line = "$this->key.dat<>$title (".($dat_num+1).")\n";
+		$sub_line = "$this->key.dat<>$title (".($dat_num).")\n";
 		$match_count = substr_count("$dat_line$sub_line", "<>");
 		if($match_count != 5){
 			$this->CloseFile($fp_subject, $fp_dat);
 			PrintError("投稿できませんでした。");
 		}
-
 		$dat[] = $dat_line;
-		if ($dat_num = 1000){
+
+		if ($dat_num == 1000){
 			$name = $this->GenerateName("１００１");
 			$mail = $this->GenerateMail("");
 			$date = $this->GenerateDate();
@@ -268,16 +295,6 @@ class BBS{
 		rewind($fp_subject);
 		fputs($fp_subject, implode("", $subject));
 		$this->CloseFile($fp_subject);
-	}
-
-
-	function checkBan(){
-		$banList = $this->getBanList();
-		$host = $this->getHost();
-		if(in_array($host,$banList)){
-			return true;
-		}
-		return false;
 	}
 
 
