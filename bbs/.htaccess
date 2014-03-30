@@ -1,3 +1,6 @@
 <Files ~ "\.(log)$">
-	deny from all
+        deny from all
+</Files>
+<Files ~ "^\.[a-zA-Z0-9]*$">
+  deny from all
 </Files>
