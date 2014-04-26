@@ -37,13 +37,19 @@ class READ{
 		$i = 0;
 		$time = time();
 		preg_match("/(\d*)([-]*)(\d*)/",$this->option,$matches);
-		if($matches[1] == ""){
+		if($matches[1] == "" && $matches[3] == ""){
 			$matches[1]= 1;
 			$matches[3]= 1001;
 		}elseif($matches[2] == "-" && $matches[3] == ""){
 			$matches[3]= 1001;
 		}elseif($matches[3] == ""){
 			$matches[3]= $matches[1];
+		}elseif($matches[1] == "" && $matches[3] !== ""){
+			$matches[1]= 1;
+		}elseif($matches[1] !== "" && $matches[3] !== ""){
+		}else{
+			$matches[1]= 1;
+			$matches[3]= 1001;
 		}
 		$file = "$this->path/$this->bbs/dat/$this->key.dat";
 		if(!is_file($file)){
@@ -54,6 +60,8 @@ class READ{
 			else { $this->PrintError("スレッドが見つかりませんでした。"); }
 		}
 		$fp = fopen($file, 'rb');
+		$res = array();
+		$res_idx = 1;
 		while(($line = fgets($fp)) !== false){
 			$i++;
 			list($name, $url, $date, $text, $subject) = explode("<>", $line);
@@ -68,13 +76,33 @@ class READ{
 				$namestring = $name;
 			}
 			if ($i == 1){ $stock_subject = rtrim($subject); }
-			$disp = "";
-			if($i < $matches[1] || $i > $matches[3])$disp = ' style="display: none;" ';
-			$dl .= "<dt id=\"res{$i}\" $disp>$i 名前：<span class=\"name\">$namestring</span> 投稿日：$date ";
-			if(strlen($url))$dl .= "<span class=\"mail\">[<span class=\"url\">$url</span></span>]";
-			$dl .= "</dt><dd id=\"mes{$i}\" $disp>$text</dd>\n";
+			$res[$res_idx] = "<dt id=\"res{$i}\" $disp>$i 名前：<span class=\"name\">$namestring</span> 投稿日：$date ";
+			if(strlen($url)){
+				$dl .= "<span class=\"mail\">[<span class=\"url\">$url</span></span>]";
+				$res[$res_idx] .= "<span class=\"mail\">[<span class=\"url\">$url</span></span>]";
+			}
+			$res[$res_idx] .= "</dt><dd id=\"mes{$i}\" $disp>$text</dd>\n";
+			$res_idx++;
 		}
-
+		preg_match("/l(\d*)/",$this->option,$matches2);
+		if(is_numeric($matches2[1])){
+			$startIdx = $res_idx - ($matches2[1] + 1);
+		}else{
+			$startIdx = (int)$matches[1];
+		}
+		if($matches[3] > $res_idx)
+		{
+			$endidx = $res_idx - 1;
+		}else{
+			$endidx = $matches[3];
+		}
+		$dl = "";
+		$outputIndex = $startIdx;
+		while($outputIndex <= $endidx)
+		{
+			$dl .= $res[$outputIndex];
+			$outputIndex++;
+		}
 		$cookie_name = htmlspecialchars($_COOKIE["NAME"]);
 		$cookie_mail = htmlspecialchars($_COOKIE["MAIL"]);
 		
@@ -96,11 +124,89 @@ document.write('<input type="text" name="url" value="" id="trap1"><input type="p
 document.write('</form>');
 document.getElementById('trap1').style.display = "none";
 document.getElementById('trap2').style.display = "none";
+
+var resCount = {$endidx};
+var lastGetTimeDiff = 0;
+var interval = 10;
+var reloadLimitMinutes = 60;
+	$(function(){
+	function getNewRes(){
+		if(resCount==1001){
+			clearInterval(timer);
+			$('#reloadTimeArea').toggle();
+			$('#autoReload').attr("checked", false);
+			$('#autoReloadMessage').html("1001まで取得したので自動更新を終了しました");
+		}else{
+		    $.ajax({
+		        type: "POST",
+		        url: "/test/ajax.cgi/{$this->bbs}/{$this->key}/"+resCount,
+		        dataType: "json",
+		        success: function(data, dataType) 
+		        {
+		        	if(data.resCount == resCount){
+		        		lastGetTimeDiff = lastGetTimeDiff + interval;
+		        		if(lastGetTimeDiff >= (60 * reloadLimitMinutes)){
+							clearInterval(timer);
+							$('#reloadTimeArea').toggle();
+							$('#autoReload').attr("checked", false);
+							$('#autoReloadMessage').html(reloadLimitMinutes + "分間新規レスを取得できなかったので自動更新を終了しました");
+		        		}
+		        	}else{
+			            //返ってきたデータの表示
+			            var content = $('#thread');
+			            var appendHtml = "";
+						$(data.newRes).each(function(){
+							appendHtml += "<dt id=res" + this.resNo + ">" + this.resNo + " 名前：<span class=\"name\">" + this.name + "</span> 投稿日：" + this.date + " ";
+							if(this.url)appendHtml += "<span class=\"mail\">[<span class=\"url\">" + this.url + "</span></span>]";
+							appendHtml += "</dt><dd id=\"mes" + this.resNo + "\">" + this.text + "</dd>";
+						});
+						resCount = data.resCount;
+						lastGetTimeDiff = 0;
+		                content.append(appendHtml);
+		            }
+		        },
+		        error: function(XMLHttpRequest, textStatus, errorThrown) 
+		        {
+					console.log("error");
+		        }
+		    });
+		}
+	}
+	var timer;
+	function doTimer(t){
+		if(timer) clearInterval(timer);
+		timer=setInterval(getNewRes,t);
+	}
+	$('#autoReload').change(function(){
+		$('#reloadTimeArea').toggle();
+		if ($(this).is(':checked')) {
+			var interval = ($('#reloadTime').val() * 1000);
+			doTimer(interval);
+			$('#autoReloadMessage').html("");
+		} else {
+			clearInterval(timer);
+		}
+	});
+	$('#reloadTime').change(function(){
+		if ($('#autoReload').is(':checked')) {
+			interval = ($('#reloadTime').val() * 1000);
+			doTimer(interval);
+		} else {
+			clearInterval(timer);
+		}
+	});
+
+	});
+	$('#autoReload').attr("checked", false)
+	$('#reloadTimeArea').css("display", "none");
+	$('#reloadNewRes').click(function(){
+		window.location.href = '/test/read.cgi/{$this->bbs}/{$this->key}/'+ resCount +'-';
+	});
 </script>
 PHPHereDocument;
 
 		if ($i >= 1000) { $this->mode = "readonly"; }
-		if ($this->mode == "readonly"){ $form = ""; }
+//		if ($this->mode == "readonly"){ $form = ""; }
 		header("Content-type: text/html; charset=shift_jis");
 
 		print <<< PHPHereDocument
@@ -120,7 +226,17 @@ PHPHereDocument;
 <h1>{$stock_subject}</h1>
 <dl id="thread">
 {$dl}</dl>
-
+<div id="newRes">
+	<a id="reloadNewRes" style="cursor:pointer;border-bottom:solid 1px;color:#00f">新着レス</a>
+	自動更新：<input type="checkbox" id="autoReload" />
+	<span id="reloadTimeArea"><select id="reloadTime">
+		<option value="10">10</option>
+		<option value="20">20</option>
+		<option value="30">30</option>
+	</select>秒</span>
+	<span id="autoReloadMessage"></span>
+</div>
+<div id="content"></div>
 {$form}
 
 </body>

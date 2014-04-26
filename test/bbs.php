@@ -129,10 +129,14 @@ class BBS{
 	function checkNgWord(){
 		$file_name = "../".$this->bbs."/".'.ngword';
 		$tmpngWords = file_get_contents(trim($file_name));
-		$tmpngWords = explode("\n",strtolower(mb_convert_kana($tmpngWords,"asKV","SJIS")));
-		$pattern = '/('.implode("|",$tmpngWords).')/';
-		$ngFlag = preg_match($pattern, strtolower(mb_convert_kana($this->message,"asKV","SJIS")), $matches, PREG_OFFSET_CAPTURE);
-		return $ngFlag;
+		if(trim($tmpngWords) != ""){
+			$tmpngWords = explode("\n",strtolower(mb_convert_kana($tmpngWords,"asKV","SJIS")));
+			$pattern = '/('.implode("|",$tmpngWords).')/';
+			$ngFlag = preg_match($pattern, strtolower(mb_convert_kana($this->message,"asKV","SJIS")), $matches, PREG_OFFSET_CAPTURE);
+			return $ngFlag;
+		}else{
+			return false;
+		}
 	}
 
 	function WriteThread(){

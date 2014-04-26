@@ -318,7 +318,7 @@ class ADMIN{
 		foreach($tmpdats as $dat_line){
 			list($name,$url,$time,$body,$title) = explode("<>",$dat_line);
 			if($name){
-				$dats[$idx] = "<tr><td>$idx</td><td>$name</td><td>$body</td><td>$ips[$idx]</td></tr>";
+				$dats[$idx] = "<tr><td style=\"border-bottom:solid 1px\">$idx</td><td style=\"border-bottom:solid 1px\">$name</td><td style=\"border-bottom:solid 1px\">$body</td><td style=\"border-bottom:solid 1px\">$ips[$idx]</td></tr>";
 				$idx++;
 			}
 		}

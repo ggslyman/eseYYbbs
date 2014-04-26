@@ -46,7 +46,7 @@ class INDEX{
 				$subject = preg_replace("/\(\d+\)$/", "", $subject);
 				$key = str_replace(".dat", "", $key);
 				
-				$body .= "<tr><td>$i</td><td><a href=\"../test/read.cgi/{$this->bbs}/{$key}/\">$subject</a></td><td>$rescount</td></tr>\n";
+				$body .= "<tr><td>$i</td><td><a href=\"../test/read.cgi/{$this->bbs}/{$key}/\">$subject</a>Å@<a href=\"../test/read.cgi/{$this->bbs}/{$key}/l50\">êVíÖ</a></td><td>$rescount</td></tr>\n";
 			}
 			$body .= '</table>';
 			if(isset($_GET["d"]) && $_GET["d"]!=="1")$description = "";
