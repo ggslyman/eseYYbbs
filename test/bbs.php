@@ -16,6 +16,7 @@ class BBS{
 	private $trap2;
 	private $now;
 	private $active;
+	private $entryPass;
 
 	function BBS(){
 		//error_reporting(0);
@@ -41,8 +42,7 @@ class BBS{
 		$this->time    = $_POST["time"];
 		$this->trap1   = $_POST["url"];
 		$this->trap2   = $_POST["password"];
-		
-		
+
 		if(!$this->bbs){ $this->RecieveRawPost();} //クライアントにより$_POSTにデータが入らないバグ対策
 		
 		// 管理モードへの分岐
@@ -79,7 +79,7 @@ class BBS{
 			header("Location: ../".$this->bbs."/?d=1");
 		}elseif($this->name == 'ハッシュ生成'){
 			// パスワードをMD5で保存する形に変更したので、ハッシュ生成機能を追加
-			PrintSucess(md5($this->mail));
+			PrintSucess(password_hash($this->mail,PASSWORD_DEFAULT, array('cost' => 10)));
 		}
 
 		if($this->active){
@@ -153,7 +153,7 @@ class BBS{
 		$boardadminpass = file_get_contents($file_name);
 		$adminpass = ADMIN_PASSWORD;
 		// パスワードファイルが存在した場合のみ、パスワードチェック
-		if(($adminOnryFlag) && (strlen($boardadminpass) && $boardadminpass !== md5($this->mail) && $adminpass !== md5($this->mail))){
+		if(($adminOnryFlag) && (strlen($boardadminpass) && password_verify($this->mail,$boardadminpass) && password_verify($this->mail,$adminpass))){
 			PrintError("スレッド作成は管理者のみが行えます");
 		}else{
 			//subject.txt：$subjectlistに全データ格納

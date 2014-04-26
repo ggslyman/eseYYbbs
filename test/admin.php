@@ -8,7 +8,6 @@ class ADMIN{
 	private $key;
 	private $path = "..";
 	
-	
 	function ADMIN($name, $mail, $bbs, $key = "", $message = ""){
 		$this->name = $name;
 		$this->mail = $mail;
@@ -21,10 +20,11 @@ class ADMIN{
 		$adminpass = ADMIN_PASSWORD;
 		$file_name = "../".$this->bbs."/".'.password';
 		$boardadminpass = file_get_contents($file_name);
+
 		if(strlen($boardadminpass)){
 			$pass = $boardadminpass;
 		}
-		if(md5($this->mail) == $adminpass || (isset($pass) && md5($this->mail) == $pass)){
+		if(password_verify($this->mail,$adminpass) || (isset($pass) && password_verify($this->mail,$pass))){
 			switch ($this->name){
 				case "復帰":
 					$this->Fukki();
@@ -148,7 +148,7 @@ class ADMIN{
 					PrintSucess("板を再開しました。");
 					braek;
 				case "新規板作成":
-					if(md5($this->mail) == $adminpass){
+					if(password_verify($this->mail,$adminpass)){
 						$this->createThread($this->message);
 						PrintSucess("新規板を作成しました。");
 					}
@@ -711,8 +711,9 @@ class ADMIN{
 		// 作成するファイル名の指定
 		$file_name = "../".$this->bbs."/".'.password';
 		// ファイルポインタを開く
+		$newPassHash = password_hash(trim($message),PASSWORD_DEFAULT, array('cost' => 10));
 		$fp = fopen($file_name,'w');
-		fputs($fp,md5($message));
+		fputs($fp,$newPassHash);
 		// 開いたファイルポインタを閉じる
 		fclose($fp);
 		chmod($file_name,0600);

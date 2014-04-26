@@ -1,6 +1,6 @@
 <?php
-// 管理者のパスワード。MD5形式へ変更
-define('ADMIN_PASSWORD', 'b9b7c289a0e002654a62ef568cc9314c');
+// 管理者のパスワード
+define('ADMIN_PASSWORD', '要変更');
 // 板設置ディレクトリ
 define('DEPLOY_DIR','/var/www/html/bbs/');
 // コピー元板ディレクトリ
