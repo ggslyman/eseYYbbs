@@ -44,7 +44,6 @@ class BBS{
 		$this->trap2   = $_POST["password"];
 
 		if(!$this->bbs){ $this->RecieveRawPost();} //クライアントにより$_POSTにデータが入らないバグ対策
-		
 		// 管理モードへの分岐
 		if((
 					$this->name == '復帰'
@@ -81,7 +80,6 @@ class BBS{
 			// パスワードをMD5で保存する形に変更したので、ハッシュ生成機能を追加
 			PrintSucess(password_hash($this->mail,PASSWORD_DEFAULT, array('cost' => 10)));
 		}
-
 		if($this->active){
 			//通常処理
 			$this->CheckInput();
@@ -153,54 +151,57 @@ class BBS{
 		$boardadminpass = file_get_contents($file_name);
 		$adminpass = ADMIN_PASSWORD;
 		// パスワードファイルが存在した場合のみ、パスワードチェック
-		if(($adminOnryFlag) && (strlen($boardadminpass) && password_verify($this->mail,$boardadminpass) && password_verify($this->mail,$adminpass))){
-			PrintError("スレッド作成は管理者のみが行えます");
-		}else{
-			//subject.txt：$subjectlistに全データ格納
-			$fp_subject = fopen("$this->path/$this->bbs/subject.txt", "rb+");
-			if(!$fp_subject){ PrintError("subject.txtが開けません。"); }
-
-			flock($fp_subject, LOCK_EX);
-			while(!feof($fp_subject)){
-				$subjectlist[] = fgets($fp_subject);
+		if($adminOnryFlag){
+			if((strlen($boardadminpass) > 0 && password_verify($this->mail,$boardadminpass)) === false && password_verify($this->mail,$adminpass) === false){
+				PrintError("スレッド作成は管理者のみが行えます");
+				exit;
 			}
-
-			//DATファイルに書き込む
-			$name = $this->GenerateName($this->name);
-			$mail = $this->GenerateMail($this->mail);
-			$date = $this->GenerateDate();
-			$message = $this->GenerateMessage($this->message);
-			$subject = $this->GenerateSubject($this->subject);
-
-			if(is_file("$this->path/$this->bbs/dat/$this->key.dat")){
-				$this->CloseFile($fp_subject);
-				PrintError("もう一度投稿してください");
-			}
-			$fp_dat = fopen("$this->path/$this->bbs/dat/$this->key.dat", "wb+");
-			if(!$fp_dat){
-				$this->CloseFile($fp_subject);
-				PrintError("DATファイルが作成できません。");
-			}
-			
-			$dat_line = "$name<>$mail<>$date<> $message <>$subject\n";
-			$sub_line = "$this->key.dat<>$subject (1)\n";
-			$match_count = substr_count("$dat_line$sub_line", "<>");
-			if($match_count != 5){
-				$this->CloseFile($fp_subject, $fp_dat);
-				PrintError("投稿できませんでした");
-			}
-			
-			flock($fp_dat, LOCK_EX);
-			fputs($fp_dat, $dat_line);
-			$this->CloseFile($fp_dat);
-
-			//subject.txtに書き込む
-			array_unshift($subjectlist, $sub_line);
-			ftruncate($fp_subject,0);
-			rewind($fp_subject);
-			fputs($fp_subject, implode("", $subjectlist));
-			$this->CloseFile($fp_subject);
 		}
+
+		//subject.txt：$subjectlistに全データ格納
+		$fp_subject = fopen("$this->path/$this->bbs/subject.txt", "rb+");
+		if(!$fp_subject){ PrintError("subject.txtが開けません。"); }
+
+		flock($fp_subject, LOCK_EX);
+		while(!feof($fp_subject)){
+			$subjectlist[] = fgets($fp_subject);
+		}
+
+		//DATファイルに書き込む
+		$name = $this->GenerateName($this->name);
+		$mail = $this->GenerateMail($this->mail);
+		$date = $this->GenerateDate();
+		$message = $this->GenerateMessage($this->message);
+		$subject = $this->GenerateSubject($this->subject);
+
+		if(is_file("$this->path/$this->bbs/dat/$this->key.dat")){
+			$this->CloseFile($fp_subject);
+			PrintError("もう一度投稿してください");
+		}
+		$fp_dat = fopen("$this->path/$this->bbs/dat/$this->key.dat", "wb+");
+		if(!$fp_dat){
+			$this->CloseFile($fp_subject);
+			PrintError("DATファイルが作成できません。");
+		}
+		
+		$dat_line = "$name<>$mail<>$date<> $message <>$subject\n";
+		$sub_line = "$this->key.dat<>$subject (1)\n";
+		$match_count = substr_count("$dat_line$sub_line", "<>");
+		if($match_count != 5){
+			$this->CloseFile($fp_subject, $fp_dat);
+			PrintError("投稿できませんでした");
+		}
+		
+		flock($fp_dat, LOCK_EX);
+		fputs($fp_dat, $dat_line);
+		$this->CloseFile($fp_dat);
+
+		//subject.txtに書き込む
+		array_unshift($subjectlist, $sub_line);
+		ftruncate($fp_subject,0);
+		rewind($fp_subject);
+		fputs($fp_subject, implode("", $subjectlist));
+		$this->CloseFile($fp_subject);
 	}
 	
 	
