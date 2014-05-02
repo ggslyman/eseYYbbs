@@ -9,33 +9,34 @@ class INDEX{
 	function INDEX(){
 		//error_reporting(0);
 		require_once "./common.php";
+		require_once "./setting.php";
 
 		$this->bbs = $_GET["bbs"];
 		$settingFilePath = "../$this->bbs/";
+		$testPath = "../test/";
 
 		$this->disabled = file_exists($settingFilePath.'.disabled');
 
 		$tmptitle = file_get_contents($settingFilePath.'.title');
 		if(strlen($tmptitle))$this->title = $tmptitle;
-
 		$cookie_name = "";
 		$cookie_mail = "";
 		if(isset($_COOKIE["NAME"]))$cookie_name = htmlspecialchars($_COOKIE["NAME"]);
 		if(isset($_COOKIE["MAIL"]))$cookie_mail = htmlspecialchars($_COOKIE["MAIL"]);
 		$description = "";
 		if(file_exists($settingFilePath.'.description'))$description = file_get_contents($settingFilePath.'.description');
-
+		if(file_exists($testPath.'.announce'))$announce = file_get_contents($testPath.'.announce');
+		$skin = "2ch";
+		if(file_exists($testPath.'.skin'))$skin = file_get_contents($testPath.'.skin');
 
 		$subjectlist = file($settingFilePath."subject.txt");
-		$body = '<div id="container">';
-		$body .= getHeader();
+		$header = getHeader();
 		if($this->disabled){
-			$body = "現在、この板は停止中です。";
+			header("Content-type: text/html; charset=shift_jis");
+			echo "現在、この板は停止中です。";
 		}else{
-			if(strlen($description))$body .= '<div id="description">'.$description.'</div>';
-			$body .= '<table id="board">';
-			$body .= '<tr><th id="no">No</th><th id="title">タイトル</th><th id="rescount">レス</th></tr>';
 
+			$link = '';
 			$i = 0;
 			foreach($subjectlist as $line){
 				$i++;
@@ -45,34 +46,31 @@ class INDEX{
 				$rescount = $matches[1];
 				$subject = preg_replace("/\(\d+\)$/", "", $subject);
 				$key = str_replace(".dat", "", $key);
-				
-				$body .= "<tr><td>$i</td><td><a href=\"../test/read.cgi/{$this->bbs}/{$key}/\">$subject</a>　<a href=\"../test/read.cgi/{$this->bbs}/{$key}/l50\">新着</a></td><td>$rescount</td></tr>\n";
+				$link .= "<li><a href=\"../test/read.cgi/{$this->bbs}/{$key}/l50\">新着</a> <a href=\"../test/read.cgi/{$this->bbs}/{$key}/\">$subject</a> ({$rescount})</li>";
 			}
-			$body .= '</table>';
 			if(isset($_GET["d"]) && $_GET["d"]!=="1")$description = "";
-			$body .= <<<PHPHereDocument
+			$script = <<<PHPHereDocument
 <script type="text/javascript">
 var url   = "../test/bbs.cgi?guid=ON";
 var bbs   = "{$this->bbs}";
 var cname = "{$cookie_name}";
 var cmail = "{$cookie_mail}";
-var heredoc = (function () {/*
-$description
-*/}).toString().match(/[^]*\/\*([^]*)\*\/\}$/)[1];
-document.write('<form action="'+ url +'" method="POST" id="threadform">');
-document.write('<input type="hidden" name="bbs" value="'+ bbs +'">');
-document.write('<div id="formline1">題名 <input type="text" name="subject" id="formtitle"></div>');
-document.write('名前 <input type="text" name="FROM" value="'+ cname +'"> ');
-document.write('メール <input type="text" name="mail" value="'+ cmail +'"><br>');
-document.write('<textarea name="MESSAGE">'+heredoc+'</textarea><br>');
-document.write('<input type="submit" name="submit" value="新規スレッド作成">');
-document.write('<input type="text" name="url" value="" id="trap1"><input type="password" name="password" value="" id="trap2">');
-document.write('</form>');
+var formHtml =  '<form action="'+ url +'" method="POST" id="threadform">';
+formHtml = formHtml + '<input type="hidden" name="bbs" value="'+ bbs +'">';
+formHtml = formHtml + '<div id="formline1">題名 <input type="text" name="subject" id="formtitle"></div>';
+formHtml = formHtml + '名前 <input type="text" name="FROM" value="'+ cname +'"> ';
+formHtml = formHtml + 'メール <input type="text" name="mail" value="'+ cmail +'"><br>';
+formHtml = formHtml + '<textarea name="MESSAGE"></textarea><br>';
+formHtml = formHtml + '<input type="submit" name="submit" value="新規スレッド作成">';
+formHtml = formHtml + '<input type="text" name="url" value="" id="trap1"><input type="password" name="password" value="" id="trap2">';
+formHtml = formHtml + '</form>';
+console.log(formHtml);
+document.getElementById('newentry').innerHTML = formHtml;
 document.getElementById('trap1').style.display = "none";
 document.getElementById('trap2').style.display = "none";
 </script>
 PHPHereDocument;
-			$body .= getFooter();
+			$footer = getFooter();
 			$body .= "</div>";
 		}
 		header("Content-type: text/html; charset=shift_jis");
@@ -82,15 +80,53 @@ PHPHereDocument;
 <head>
   <meta charset="shift_jis">
   <title>{$this->title}</title>
-  <link href="./index.css" rel="stylesheet">
+  <link href="{$testPath}css/{$skin}/index.css" rel="stylesheet">
   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
 </head>
-<body>
+<body id="top">
+<header>
+<div id="kanban"></div>
+<div class="box menu">
+ <div class="content aa" id="localrule">
+ <h1>{$this->title}</h1>
+ <div class="clear"><hr></div>
+  <div id="headtxt">
+{$description}
+  </div>
+ </div>
+</div>
+</header>
 
-{$body}
+<aside>
+<!-- 告知欄は別設定 -->
+<div class="box menu">
+ <div class="content">
+ {$announce}
+ </div>
+</div>
+</aside>
 
+<div id="menu" class="box menu">
+ <nav class="content">
+  <ol id="threadindex">
+{$link}
+  </ol>
+ </nav>
+</div>
+
+<div class="box mkthread">
+ <div class="content" id="newentry">
+ </div>
+ <div class="clear"><hr></div>
+</div>
+
+<footer>
+{$footer}
+<div id="copyright">
+</div>
+{$script}
+</footer>
 </body>
-</html>
 PHPHereDocument;
 
 	}

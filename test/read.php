@@ -215,7 +215,6 @@ PHPHereDocument;
 <head>
   <meta charset="shift_jis">
   <title>$stock_subject</title>
-  <link href="{$this->url}/{$this->bbs}/index.css" rel="stylesheet">
   <link href="{$this->url}/test/css/style.css" rel="stylesheet">
   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
   <script src="{$this->url}/test/js/popup.js"></script>

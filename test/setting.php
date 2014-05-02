@@ -1,6 +1,6 @@
 <?php
 // 管理者のパスワード
-define('ADMIN_PASSWORD', '要変更');
+define('ADMIN_PASSWORD', '');
 // 板設置ディレクトリ
 define('DEPLOY_DIR','/var/www/html/bbs/');
 // コピー元板ディレクトリ
